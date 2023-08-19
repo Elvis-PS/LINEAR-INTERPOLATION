@@ -25,24 +25,18 @@
         let audioCtx = null;
         let osc = null;
 
-        const lowfrequency = 100;
-        const highfrequency = 300;
-
-        let frequency;
-        
+        const lowfrequency = 200;
+        const highfrequency = 500;
         
         myCanvas.onclick=function(){
             if(audioCtx==null){
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                osc = audioCtx.createOscillator();                
-                osc.frequency.value = frequency;
-                
+                osc = audioCtx.createOscillator();
                 osc.start();
                 const node = audioCtx.createGain();
-                node.gain.value = 0.3;
+                node.gain.value = 0.2;
                 osc.connect(node);
                 node.connect(audioCtx.destination);
-
             }
         }
         
@@ -58,17 +52,27 @@
             ctx.clearRect(0,0,myCanvas.width, myCanvas.height); 
             const sec = new Date().getTime()/1000;
             const t = (Math.sin(sec*Math.PI*0.2)+1)/2;
-
-            frequency = lerp(lowfrequency, highfrequency, t);
             
-            const {r,g,b} = vLerp(red, blue, t);
-            myCanvas.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
             const C = vLerp(A,B, t);
             drawDot(C, "");
-
             drawDot(A, "A"); 
             drawDot(B, "B");
-            myCanvas.onlclick()
+
+            const {r,g,b} = vLerp(red, blue, t);
+            myCanvas.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+
+            if(osc){
+                osc.frequency.value=lerp(lowfrequency, highfrequency, t);
+            }
+
+            ctx.strokeStyle = "white";
+            ctx.textAling = "center";
+            ctx.textBaseline = "top";
+            ctx.font = "bold 60px Arial";
+            ctx.setLineDash([lerp(0.1, 200, t), 150]);
+            ctx.strokeText("Click for sound", myCanvas.width/2, 20);
+
+            ctx.setLineDash([]);
 
             window.requestAnimationFrame(animate);
         }
