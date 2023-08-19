@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linear_Interpolation</title>
+    <style>
+        body{
+            margin: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+    <script>
+
+        const myCanvas = document.getElementById('myCanvas');
+
+        myCanvas.width = window.innerWidth;
+        myCanvas.height = window.innerHeight;
+        const ctx = myCanvas.getContext('2d');
+
+        let audioCtx = null;
+        let osc = null;
+
+        const lowfrequency = 100;
+        const highfrequency = 300;
+
+        let frequency;
+        
+        
+        myCanvas.onclick=function(){
+            if(audioCtx==null){
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                osc = audioCtx.createOscillator();                
+                osc.frequency.value = frequency;
+                
+                osc.start();
+                const node = audioCtx.createGain();
+                node.gain.value = 0.3;
+                osc.connect(node);
+                node.connect(audioCtx.destination);
+
+            }
+        }
+        
+        const A = {x: 50, y: 100}; 
+        const B = {x: 800, y: 800};
+
+        const red = {r:160, g:50, b:0};
+        const blue = {r:0, g:70, b: 160};
+        
+        
+        animate();
+        function animate(){
+            ctx.clearRect(0,0,myCanvas.width, myCanvas.height); 
+            const sec = new Date().getTime()/1000;
+            const t = (Math.sin(sec*Math.PI*0.2)+1)/2;
+
+            frequency = lerp(lowfrequency, highfrequency, t);
+            
+            const {r,g,b} = vLerp(red, blue, t);
+            myCanvas.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            const C = vLerp(A,B, t);
+            drawDot(C, "");
+
+            drawDot(A, "A"); 
+            drawDot(B, "B");
+            myCanvas.onlclick()
+
+            window.requestAnimationFrame(animate);
+        }
+        
+
+        function lerp(a, b, t){
+            return a + (b-a)*t;
+        }
+
+        function vLerp(A, B, t){
+            // return { x:lerp(A.x, B.x, t), y:lerp(A.y, B.y, t) };
+            const res = {};
+            for(let attr in A){
+                res[attr] = lerp(A[attr], B[attr], t);
+            }
+            return res;
+        }
+        
+
+         
+        function drawDot(pos, label){
+            ctx.beginPath();
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'black';
+            ctx.arc(pos.x, pos.y, 25, 0, Math.PI*2);
+            ctx.fill();
+            ctx.stroke(); 
+    
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = "bold 0.8rem  Arial";
+            ctx.fillText(label, pos.x, pos.y);
+        }
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>
